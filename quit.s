@@ -26,6 +26,9 @@ _start:
     cmp x0, #0
     blt handle_error
 
+    bl clear_term
+    bl hide_cursor
+
     read_loop_start:
         bl read_symbl
         adr x0, symbl
@@ -70,6 +73,8 @@ get_terminal_state:
     ret
 
 restore_and_exit:
+    bl show_cursor
+
     adr x0, orig
     bl set_terminal_state
     // --- Check Return Value ---
@@ -96,7 +101,43 @@ handle_error:
     mov x0, #-1
     svc #0
 
+hide_cursor:
+    mov x0, #1
+    adr x1, hide_cursor_seq
+    mov x2, hide_cursor_seq_len
+    mov x8, #64
+    svc #0
+    ret
+
+show_cursor:
+    mov x0, #1
+    adr x1, show_cursor_seq
+    mov x2, show_cursor_seq_len
+    mov x8, #64
+    svc #0
+    ret
+
+clear_term:
+    mov x0, #1
+    adr x1, clear_screen_seq
+    mov x2, clear_screen_seq_len
+    mov x8, #64
+    svc #0
+    ret
+
 .data
+hide_cursor_seq:
+    .ascii "\033[?25l"
+    hide_cursor_seq_len = . - hide_cursor_seq
+
+show_cursor_seq:
+    .ascii "\033[?25h"
+    show_cursor_seq_len = . - show_cursor_seq
+
+clear_screen_seq:
+    .ascii "\033[2J\033[H"
+    clear_screen_seq_len = . - clear_screen_seq
+
 orig:
     .space  60
 new:

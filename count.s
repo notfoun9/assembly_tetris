@@ -49,8 +49,8 @@ show_cursor:
 
 clear_term:
     mov x0, #1
-    adr x1, escape_seq
-    mov x2, escape_seq_len
+    adr x1, clear_screen_seq
+    mov x2, clear_screen_seq_len
     mov x8, #64
     svc #0
     ret
@@ -97,9 +97,9 @@ show_cursor_seq:
     .ascii "\033[?25h"
     show_cursor_seq_len = . - show_cursor_seq
 
-escape_seq:
+clear_screen_seq:
     .ascii "\033[2J\033[H"
-    escape_seq_len = . - escape_seq
+    clear_screen_seq_len = . - clear_screen_seq
 
 countdown_buffer:
     .space 2
