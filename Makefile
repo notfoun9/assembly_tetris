@@ -1,4 +1,4 @@
-all: itoa input sleep count
+all: itoa input sleep count stack
 
 itoa: itoa.s
 	@as -o itoa.o itoa.s
@@ -19,3 +19,8 @@ count: count.s
 	@as -g -o count.o count.s
 	@ld -o executables/count count.o
 	@rm count.o
+
+stack: stack.s
+	@as -g -o stack.o stack.s
+	@ld -o executables/stack stack.o
+	@rm stack.o
