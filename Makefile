@@ -14,6 +14,12 @@ MACROS_PATH="$(shell pwd)/macros"
 ASFLAGS += "-I$(MACROS_PATH)" 
 export ASFLAGS
 
+all: utils main
+
+main: main.s
+	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
+	@ld -o $(EXECUTABLES_PATH)/$@ $(OBJECTS_PATH)/utils.o $(OBJECTS_PATH)/iomanip.o $(OBJECTS_PATH)/$@.o
+
 .PHONY: utils
 utils:
 	@$(MAKE) --no-print-directory -C $(UTILS_PATH)
