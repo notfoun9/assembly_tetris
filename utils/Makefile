@@ -1,4 +1,4 @@
-all: utils_test utils iomanip
+all: utils utils_test iomanip
 
 utils: utils.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<

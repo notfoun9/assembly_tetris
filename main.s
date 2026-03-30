@@ -27,6 +27,7 @@ prev_tester_pos:
 /* ------------------------------ */
 /* --------- Main start --------- */
 _start:
+    bl timer_start
     bl clear_term
     bl hide_cursor
 
@@ -136,6 +137,10 @@ switch_input_char_end:
 recover_and_exit:
     bl show_cursor
     bl clear_term
+
+    bl timer_finish
+    bl print_num
+
     mov x0, #0
     mov x8, #0x5D
     svc #0
@@ -162,21 +167,19 @@ adjust_grid:
     strb w1, [x2, x0]
 // erase previous tester state end
 
-// add current tester state start
+
+// calculate cur tester postion
     adr x2, cur_tester_pos
-    ldp x0, x1, [x2]
+    ldp x27, x1, [x2]
 
     mov x2, columns
-    mul x0, x0, x2
-    add x0, x0, x1
-
-    mov w1, #'g'
-    adr x2, grid
-    strb w1, [x2, x0]
+    mul x27, x27, x2
+    add x27, x27, x1
 // add current tester state end
 // don't break this order. Collision check uses x0
+// do not put anything in x27 until tester is drawn
 // check collision start
-    mov x5, x0 // current tester position
+    mov x5, x27 // current tester position
     adr x4, piece_position
     ldr x0, [x4]
     ldr x1, [x4, #8]
@@ -229,6 +232,12 @@ skip_state_restoring:
     mov w5, #'y'
     strb w5, [x4, x3]
 // add current piece state end
+
+// print cut tester pos start
+    mov w1, #'g'
+    adr x2, grid
+    strb w1, [x2, x27]
+// print cut tester pos end
 
     EPILOGUE
     ret
