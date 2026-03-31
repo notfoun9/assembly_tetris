@@ -130,7 +130,11 @@ adjust_grid:
 // check for collisions with floor:
     bl does_collide_with_floor
     cmp x0, #0
-    bne restore_position
+    beq no_floor_collision
+        bl restore_prev_state
+        bl place_piece_on_grid
+        bl spawn_new_piece
+    no_floor_collision:
 // check for collisions with floor
 
 // erase previous piece state start
@@ -159,10 +163,10 @@ adjust_grid:
     strb w5, [x4, x3]
 // add current piece state end
 
-    b dont_restore_position
+    EPILOGUE
+    ret
 restore_position:
     bl restore_prev_state
-dont_restore_position:
     EPILOGUE
     ret
 
@@ -284,4 +288,22 @@ does_collide_with_floor:
         cmp x0, #0
         bne floor_collision_check_loop
     floor_collision_check_end:
+    ret
+
+place_piece_on_grid:
+    PROLOGUE
+    
+    adr x1, piece_position
+    ldp x2, x3, [x1]
+    ldp x4, x5, [x1, #16]
+
+    bl get_true_piece_color
+
+    adr x1, grid
+    strb w0, [x1, x2]
+    strb w0, [x1, x3]
+    strb w0, [x1, x4]
+    strb w0, [x1, x5]
+
+    EPILOGUE
     ret

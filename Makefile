@@ -14,18 +14,22 @@ MACROS_PATH="$(shell pwd)/macros"
 ASFLAGS += "-I$(MACROS_PATH)" 
 export ASFLAGS
 
-all: colors pieces utils main
+all: colors pieces positions utils main
 
 main: main.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
-	@ld -o $(EXECUTABLES_PATH)/$@  \
-		$(OBJECTS_PATH)/pieces.o   \
-		$(OBJECTS_PATH)/colors.o   \
-		$(OBJECTS_PATH)/utils.o    \
-		$(OBJECTS_PATH)/iomanip.o  \
+	@ld -o $(EXECUTABLES_PATH)/$@   \
+		$(OBJECTS_PATH)/pieces.o    \
+		$(OBJECTS_PATH)/positions.o \
+		$(OBJECTS_PATH)/colors.o    \
+		$(OBJECTS_PATH)/utils.o     \
+		$(OBJECTS_PATH)/iomanip.o   \
 		$(OBJECTS_PATH)/$@.o
 
 pieces: pieces.s
+	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
+
+positions: positions.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
 
 colors: colors.s

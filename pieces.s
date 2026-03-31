@@ -511,3 +511,25 @@ move_left:
 
     EPILOGUE
     ret
+
+.global spawn_new_piece
+spawn_new_piece:
+    PROLOGUE
+
+    bl get_default_position
+    mov x1, x0
+    adr x0, piece_position
+    mov x2, #32
+    bl memcpy
+
+    mov x2, #32
+    adr x0, previous_position
+    bl memcpy
+
+    adr x0, piece_state
+    mov w1, #0
+    strb w1, [x0]
+
+    EPILOGUE
+    ret
+    
