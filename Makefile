@@ -14,17 +14,21 @@ MACROS_PATH="$(shell pwd)/macros"
 ASFLAGS += "-I$(MACROS_PATH)" 
 export ASFLAGS
 
-all: pieces utils main
+all: colors pieces utils main
 
 main: main.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
 	@ld -o $(EXECUTABLES_PATH)/$@  \
 		$(OBJECTS_PATH)/pieces.o   \
+		$(OBJECTS_PATH)/colors.o   \
 		$(OBJECTS_PATH)/utils.o    \
 		$(OBJECTS_PATH)/iomanip.o  \
 		$(OBJECTS_PATH)/$@.o
 
 pieces: pieces.s
+	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
+
+colors: colors.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
 
 .PHONY: utils

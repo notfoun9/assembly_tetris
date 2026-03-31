@@ -1,5 +1,5 @@
 .data
-raws = 22
+raws = 24
 columns = 12
 
 max_raw = raws - 2
@@ -121,11 +121,17 @@ recover_and_exit:
 adjust_grid:
     PROLOGUE
 
-// check for collisions with borders:
+// check for collisions with walls:
     bl does_collide_with_walls
     cmp x0, #0
     bne restore_position
-// check for collisions with borders
+// check for collisions with walls
+
+// check for collisions with floor:
+    bl does_collide_with_floor
+    cmp x0, #0
+    bne restore_position
+// check for collisions with floor
 
 // erase previous piece state start
     adr x4, previous_position
@@ -144,8 +150,9 @@ adjust_grid:
     ldp x0, x1, [x4]
     ldp x2, x3, [x4, #16]
 
+    adr x5, piece_type
+    ldrb w5, [x5]
     adr x4, grid
-    mov w5, #'g'
     strb w5, [x4, x0]
     strb w5, [x4, x1]
     strb w5, [x4, x2]
@@ -174,13 +181,6 @@ fill_grid:
 
 
     mov w0, #'r'
-    mov x2, #0
-    horizontal_up:
-        strb w0, [x1, x2]
-        add x2, x2, #1
-        cmp x2, columns
-        blt horizontal_up
-
     mov x2, raws
     sub x2, x2, #1
     mov x4, columns
@@ -208,7 +208,7 @@ fill_grid:
 print_grid:
     PROLOGUE
     adr x10, grid
-    mov x11, #0 // raws
+    mov x11, #1 // raws
     mov x21, raws
     mov x12, #0 // columns
     mov x22, columns // columns
@@ -245,21 +245,43 @@ print_grid:
 does_collide_with_walls:
     adr x4, piece_position
     mov x0, #4
-    collision_check_loop:
+    mov x2, columns
+    walls_collision_check_loop:
         ldr x1, [x4], #8
 
-        mov x2, columns
         udiv x3, x1, x2
         mul x3, x3, x2
         sub x1, x1, x3
 
         cmp x1, #0
-        beq collision_check_end
+        beq walls_collision_check_end
         cmp x1, #11
-        beq collision_check_end
+        beq walls_collision_check_end
 
         sub x0, x0, #1
         cmp x0, #0
-        bne collision_check_loop
-    collision_check_end:
+        bne walls_collision_check_loop
+    walls_collision_check_end:
+    ret
+
+// pos = raw * columns + column
+// pos / columns = raw
+// *check if raw == raws - 1 || raw == 0
+does_collide_with_floor:
+    adr x4, piece_position
+    mov x0, #4
+    mov x2, columns
+    mov x3, raws
+    sub x3, x3, #1
+    floor_collision_check_loop:
+        ldr x1, [x4], #8
+
+        udiv x1, x1, x2
+        cmp x1, x3
+        beq floor_collision_check_end
+
+        sub x0, x0, #1
+        cmp x0, #0
+        bne floor_collision_check_loop
+    floor_collision_check_end:
     ret

@@ -3,7 +3,8 @@ raws = 22
 columns = 12
 
 /* ----------------------- Piece types ----------------------- */
-// One of  I, L, J, S, T, Z, O
+// One of:  I, L, J, S, T, Z, O
+// colors:  m, o, b, g, p, r, y
 zero:
     .ascii "0\n"
 one:
@@ -13,6 +14,7 @@ two:
 three:
     .ascii "3\n"
 
+.global piece_type
 piece_type:
     .ascii "I"
 piece_state:
