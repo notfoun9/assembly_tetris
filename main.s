@@ -12,14 +12,6 @@ grid:
     .space raws * columns + 1
 len = . - grid
 
-cur_tester_pos:
-    .quad 1
-    .quad 1
-
-prev_tester_pos:
-    .quad 1
-    .quad 1
-
 .text
 .include "macros.s"
 .global _start
@@ -58,7 +50,6 @@ _start:
 
     game_loop:
         bl adjust_grid
-        bl save_cur_to_prev
         bl clear_term
         bl print_grid
 
@@ -87,45 +78,21 @@ switch_input_char_start:
 
         cmp w9, #'s'
         bne skip_down
-            adr x10, cur_tester_pos
-            ldrb w4, [x10]
-            cmp w4, max_raw
-            beq switch_input_char_end
-            add w4, w4, #1
-            strb w4, [x10]
             b switch_input_char_end
         skip_down:
 
         cmp w9, #'w'
         bne skip_up
-            adr x10, cur_tester_pos
-            ldrb w4, [x10]
-            cmp w4, min_raw
-            beq switch_input_char_end
-            sub w4, w4, #1
-            strb w4, [x10]
             b switch_input_char_end
         skip_up:
 
         cmp w9, #'d'
         bne skip_right
-            adr x10, cur_tester_pos
-            ldrb w4, [x10, #8]
-            cmp w4, max_column
-            beq switch_input_char_end
-            add w4, w4, #1
-            strb w4, [x10, #8]
             b switch_input_char_end
         skip_right:
 
         cmp w9, #'a'
         bne skip_left
-            adr x10, cur_tester_pos
-            ldrb w4, [x10, #8]
-            cmp w4, min_column
-            beq switch_input_char_end
-            sub w4, w4, #1
-            strb w4, [x10, #8]
             b switch_input_char_end
         skip_left:
 
@@ -157,54 +124,8 @@ recover_and_exit:
     mov x8, #0x5D
     svc #0
 
-save_cur_to_prev:
-    adr x2, cur_tester_pos
-    ldp x0, x1, [x2]
-    adr x2, prev_tester_pos
-    stp x0, x1, [x2]
-    ret
-
 adjust_grid:
     PROLOGUE
-// erase previous tester state start
-    adr x2, prev_tester_pos
-    ldp x0, x1, [x2]
-
-    mov x2, columns
-    mul x0, x0, x2
-    add x0, x0, x1
-
-    mov w1, #' '
-    adr x2, grid
-    strb w1, [x2, x0]
-// erase previous tester state end
-
-
-// calculate cur tester postion
-    adr x2, cur_tester_pos
-    ldp x27, x1, [x2]
-
-    mov x2, columns
-    mul x27, x27, x2
-    add x27, x27, x1
-// add current tester state end
-// don't break this order. Collision check uses x0
-// do not put anything in x27 until tester is drawn
-// check collision start
-    mov x5, x27 // current tester position
-    adr x4, piece_position
-    ldp x0, x1, [x4]
-    ldp x2, x3, [x4, #16]
-
-    cmp x0, x5
-    beq state_restoring
-    cmp x1, x5
-    beq state_restoring
-    cmp x2, x5
-    beq state_restoring
-    cmp x3, x5
-    beq state_restoring
-// check collision end
 
 // erase previous piece state start
     adr x4, previous_position
@@ -217,11 +138,6 @@ adjust_grid:
     strb w5, [x4, x2]
     strb w5, [x4, x3]
 // erase previous piece state end
-
-b skip_state_restoring
-state_restoring:
-    bl restore_prev_state
-skip_state_restoring:
 
 // add current piece state start
     adr x4, piece_position
@@ -238,12 +154,6 @@ skip_state_restoring:
     mov w5, #'y'
     strb w5, [x4, x3]
 // add current piece state end
-
-// print cut tester pos start
-    mov w1, #'g'
-    adr x2, grid
-    strb w1, [x2, x27]
-// print cut tester pos end
 
     EPILOGUE
     ret
