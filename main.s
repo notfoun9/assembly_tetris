@@ -63,6 +63,12 @@ _start:
 
 /* -- Switch case input char start -- */
 switch_input_char_start:
+        cmp w9, #' '
+        bne skip_space
+            bl teleport_down
+            b switch_input_char_end
+        skip_space:
+
         cmp w9, #'k'
         bne skip_clock
             mov x0, #1
@@ -358,6 +364,62 @@ place_piece_on_grid:
     strb w0, [x1, x3]
     strb w0, [x1, x4]
     strb w0, [x1, x5]
+
+    EPILOGUE
+    ret
+
+teleport_down:
+    PROLOGUE
+
+// erase current piece state
+    adr x4, piece_position
+    ldp x0, x1, [x4]
+    ldp x2, x3, [x4, #16]
+    adr x4, grid
+    mov w5, #' '
+    strb w5, [x4, x0]
+    strb w5, [x4, x1]
+    strb w5, [x4, x2]
+    strb w5, [x4, x3]
+// erase current piece state end
+
+teleport_down_loop:
+    bl move_down
+
+    bl does_collide_with_pieces
+    cmp x0, #1
+    bne teleport_no_pieces_collisions
+        bl restore_prev_state
+        bl place_piece_on_grid
+        bl spawn_new_piece
+        b teleport_down_loop_end
+    teleport_no_pieces_collisions:
+
+    bl does_collide_with_floor
+    cmp x0, #0
+    beq teleport_no_floor_collision
+        bl restore_prev_state
+        bl place_piece_on_grid
+        bl spawn_new_piece
+        b teleport_down_loop_end
+    teleport_no_floor_collision:
+b teleport_down_loop
+
+teleport_down_loop_end:
+
+// add current piece state start
+    adr x4, piece_position
+    ldp x0, x1, [x4]
+    ldp x2, x3, [x4, #16]
+
+    adr x5, piece_type
+    ldrb w5, [x5]
+    adr x4, grid
+    strb w5, [x4, x0]
+    strb w5, [x4, x1]
+    strb w5, [x4, x2]
+    strb w5, [x4, x3]
+// add current piece state end
 
     EPILOGUE
     ret
