@@ -9,51 +9,72 @@ write_symbl:
     svc #0
     ret
 
-.global write_red_cell
-write_red_cell:
-    mov x0, #0
-    adr x1, red_cell_seq
-    mov x2, red_cell_seq_len
-    mov x8, WRITE
-    svc #0
-    ret
+// expects w0 - char on color: r, g, b, y, o, m, p, ' '
+.global write_cell
+write_cell:
+    /* color switch start */
+    cmp w0, #' '
+    bne not_blank_cell
+        adr x1, blank_cell_seq
+        b write_blank_cell
+    not_blank_cell:
 
-.global write_green_cell
-write_green_cell:
-    mov x0, #0
-    adr x1, green_cell_seq
-    mov x2, green_cell_seq_len
-    mov x8, WRITE
-    svc #0
-    ret
+    cmp w0, #'r'
+    bne not_red_cell
+        adr x1, red_cell_seq
+        b write_colored_cell
+    not_red_cell:
 
-.global write_yellow_cell
-write_yellow_cell:
-    mov x0, #0
-    adr x1, yellow_cell_seq
-    mov x2, yellow_cell_seq_len
-    mov x8, WRITE
-    svc #0
-    ret
+    cmp w0, #'g'
+    bne not_green_cell
+        adr x1, green_cell_seq
+        b write_colored_cell
+    not_green_cell:
 
-.global write_blue_cell
-write_blue_cell:
-    mov x0, #0
-    adr x1, blue_cell_seq
-    mov x2, blue_cell_seq_len
-    mov x8, WRITE
-    svc #0
-    ret
+    cmp w0, #'b'
+    bne not_blue_cell
+        adr x1, blue_cell_seq
+        b write_colored_cell
+    not_blue_cell:
 
-.global write_blank_cell
-write_blank_cell:
-    mov x0, #0
-    adr x1, blank_cell_seq
-    mov x2, blank_cell_seq_len
-    mov x8, WRITE
-    svc #0
-    ret
+    cmp w0, #'y'
+    bne not_yellow_cell
+        adr x1, yellow_cell_seq
+        b write_colored_cell
+    not_yellow_cell:
 
+    cmp w0, #'o'
+    bne not_orange_cell
+        adr x1, orange_cell_seq
+        b write_colored_cell
+
+    not_orange_cell:
+
+    cmp w0, #'m'
+    bne not_magenta_cell
+        adr x1, magenta_cell_seq
+        b write_colored_cell
+    not_magenta_cell:
+
+    cmp w0, #'p'
+    bne not_purple_cell
+        adr x1, purple_cell_seq
+        b write_colored_cell
+    not_purple_cell:
+    /* color switch end */
+
+    write_colored_cell:
+        mov x0, #0
+        mov x2, colored_cell_len
+        mov x8, #0x40
+        svc #0
+    ret
+    write_blank_cell:
+        mov x0, #0
+        mov x2, blank_cell_len
+        mov x8, #0x40
+        svc #0
+    ret
 
 .global read_symbl
 read_symbl:
@@ -131,25 +152,32 @@ clear_screen_seq:
     .ascii "\033[2J\033[H"
     clear_screen_seq_len = . - clear_screen_seq
 
-red_cell_seq:
-    .ascii "\x1b[41m  \x1b[0m"
-    red_cell_seq_len = . - red_cell_seq
+red_cell_seq: // for Z shape
+    .ascii "\x1b[48;02;220;65;50m  \x1b[0m"
 
-blue_cell_seq:
-    .ascii "\x1b[44m  \x1b[0m"
-    blue_cell_seq_len = . - blue_cell_seq
+green_cell_seq: // for S shape
+    .ascii "\x1b[48;02;40;200;50m  \x1b[0m"
 
-green_cell_seq:
-    .ascii "\x1b[42m  \x1b[0m"
-    green_cell_seq_len = . - green_cell_seq
+blue_cell_seq: // for J shape
+    .ascii "\x1b[48;2;60;100;250m  \x1b[0m"
 
-yellow_cell_seq:
-    .ascii "\x1b[43m  \x1b[0m"
-    yellow_cell_seq_len = . - yellow_cell_seq
+yellow_cell_seq: // for O shape
+    .ascii "\x1b[48;2;210;190;30m  \x1b[0m"
+
+orange_cell_seq: // for L shape
+    .ascii "\x1b[48;2;240;165;50m  \x1b[0m"
+
+magenta_cell_seq: // for I shape
+    .ascii "\x1b[48;2;20;200;200m  \x1b[0m"
+
+purple_cell_seq: // for T shape
+    .ascii "\x1b[48;2;200;50;200m  \x1b[0m"
+
+colored_cell_len = . - purple_cell_seq 
 
 blank_cell_seq:
     .ascii "  "
-    blank_cell_seq_len = . - blank_cell_seq
+blank_cell_len = 2
 
 .global orig_term
 orig_term:

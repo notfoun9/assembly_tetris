@@ -218,33 +218,9 @@ print_grid:
             mov x24, x11
             mul x24, x24, x22
             add x24, x24, x12
-            ldrb w23, [x10, x24]
-            cmp w23, #'r'
-            beq red_cell
-            cmp w23, #'b'
-            beq blue_cell
-            cmp w23, #'y'
-            beq yellow_cell
-            cmp w23, #'g'
-            beq green_cell
-            cmp w23, #' '
-            beq blank_cell
-            red_cell: 
-                bl write_red_cell
-                b no_cell
-            green_cell: 
-                bl write_green_cell
-                b no_cell
-            blue_cell: 
-                bl write_blue_cell
-                b no_cell
-            yellow_cell:
-                bl write_yellow_cell
-                b no_cell
-            blank_cell:
-                bl write_blank_cell
-                b no_cell
-            no_cell:
+            ldrb w0, [x10, x24]
+            bl write_cell
+
             add x12, x12, #1
             b print_cols
         print_cols_end:
