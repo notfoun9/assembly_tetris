@@ -14,7 +14,7 @@ three:
     .ascii "3\n"
 
 piece_type:
-    .ascii "T"
+    .ascii "I"
 piece_state:
     .byte 0 // from 0 to 3
 prev_state:
@@ -23,9 +23,9 @@ prev_state:
 .global piece_position
 piece_position:
     .quad 18
-    .quad 29
-    .quad 30
-    .quad 31
+    .quad 19
+    .quad 20
+    .quad 21
 
 .global previous_position
 previous_position:
@@ -509,4 +509,3 @@ move_left:
 
     EPILOGUE
     ret
-

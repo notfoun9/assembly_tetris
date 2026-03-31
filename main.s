@@ -94,11 +94,12 @@ switch_input_char_start:
             b switch_input_char_end
         skip_right:
 
+        cmp w9, #'q'
+        beq game_loop_end
+
 /* --- Switch case input char end --- */
 switch_input_char_end:
 
-        cmp w9, #'q'
-        beq game_loop_end
         b game_loop
     game_loop_end:
 
@@ -120,6 +121,12 @@ recover_and_exit:
 adjust_grid:
     PROLOGUE
 
+// check for collisions with borders:
+    bl does_collide_with_walls
+    cmp x0, #0
+    bne restore_position
+// check for collisions with borders
+
 // erase previous piece state start
     adr x4, previous_position
     ldp x0, x1, [x4]
@@ -138,16 +145,17 @@ adjust_grid:
     ldp x2, x3, [x4, #16]
 
     adr x4, grid
-    mov w5, #'r'
-    strb w5, [x4, x0]
     mov w5, #'g'
+    strb w5, [x4, x0]
     strb w5, [x4, x1]
-    mov w5, #'b'
     strb w5, [x4, x2]
-    mov w5, #'y'
     strb w5, [x4, x3]
 // add current piece state end
 
+    b dont_restore_position
+restore_position:
+    bl restore_prev_state
+dont_restore_position:
     EPILOGUE
     ret
 
@@ -231,4 +239,27 @@ print_grid:
         b print_raws
     print_raws_end:
     EPILOGUE
+    ret
+
+// stores #0 in x0 if no collision
+does_collide_with_walls:
+    adr x4, piece_position
+    mov x0, #4
+    collision_check_loop:
+        ldr x1, [x4], #8
+
+        mov x2, columns
+        udiv x3, x1, x2
+        mul x3, x3, x2
+        sub x1, x1, x3
+
+        cmp x1, #0
+        beq collision_check_end
+        cmp x1, #11
+        beq collision_check_end
+
+        sub x0, x0, #1
+        cmp x0, #0
+        bne collision_check_loop
+    collision_check_end:
     ret
