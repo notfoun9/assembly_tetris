@@ -3,6 +3,7 @@ raws = 22
 columns = 12
 
 /* ----------------------- Piece types ----------------------- */
+//          1  2  3  4  5  6  7
 // One of:  I, L, J, S, T, Z, O
 // colors:  m, o, b, g, p, r, y
 zero:
@@ -541,51 +542,16 @@ spawn_new_piece:
     EPILOGUE
     ret
 
+.data
+types:
+    .ascii "ILJSTZO"
+
+.text
 // expects x0 - from 0 to 7 - types
 // I, L, J, S, T, Z, O
 set_piece_type:
+    adr x1, types
+    ldrb w0, [x1, x0]
     adr x1, piece_type
-    ldrb w2, [x1]
-    cmp x0, #0
-    beq set_piece_type_I
-    cmp x0, #1
-    beq set_piece_type_L
-    cmp x0, #2
-    beq set_piece_type_J
-    cmp x0, #3
-    beq set_piece_type_S
-    cmp x0, #4
-    beq set_piece_type_T
-    cmp x0, #5
-    beq set_piece_type_Z
-    cmp x0, #6
-    beq set_piece_type_O
-
-    set_piece_type_I:
-    mov w2, #'I'
-    strb w2, [x1]
-    ret
-    set_piece_type_L:
-    mov w2, #'L'
-    strb w2, [x1]
-    ret
-    set_piece_type_J:
-    mov w2, #'J'
-    strb w2, [x1]
-    ret
-    set_piece_type_S:
-    mov w2, #'S'
-    strb w2, [x1]
-    ret
-    set_piece_type_T:
-    mov w2, #'T'
-    strb w2, [x1]
-    ret
-    set_piece_type_Z:
-    mov w2, #'Z'
-    strb w2, [x1]
-    ret
-    set_piece_type_O:
-    mov w2, #'O'
-    strb w2, [x1]
+    strb w0, [x1]
     ret
