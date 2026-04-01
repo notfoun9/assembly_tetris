@@ -14,7 +14,7 @@ MACROS_PATH="$(shell pwd)/macros"
 ASFLAGS += "-I$(MACROS_PATH)" 
 export ASFLAGS
 
-all: colors pieces grid positions utils shadow main
+all: prepare colors pieces grid positions utils shadow main
 
 main: main.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
@@ -27,6 +27,10 @@ main: main.s
 		$(OBJECTS_PATH)/utils.o     \
 		$(OBJECTS_PATH)/iomanip.o   \
 		$(OBJECTS_PATH)/$@.o
+
+prepare:
+	@mkdir -p objects
+	@mkdir -p executables
 
 grid: grid.s
 	@as $(ASFLAGS) -g -o $(OBJECTS_PATH)/$@.o $<
