@@ -73,6 +73,62 @@ write_cell:
     cmp w1, #'O' - 0x20
     beq set_yellow_shadow_seq
 
+    cmp w1, #'|'
+    bne not_vertical
+        adr x1, vertical_wall_seq
+        mov x2, vertical_wall_seq_len
+        bl memcpy
+        add x0, x0, x2
+        b write_cell_end
+    not_vertical:
+
+    cmp w1, #'='
+    bne not_horizontal
+        adr x1, horizontal_wall_seq
+        mov x2, horizontal_wall_seq_len
+        bl memcpy
+        add x0, x0, x2
+        b write_cell_end
+    not_horizontal:
+
+    cmp w1, #'}'
+    bne not_up_right
+        adr x1, up_right_wall_seq
+        mov x2, up_right_wall_seq_len
+        bl memcpy
+        add x0, x0, x2
+        b write_cell_end
+    not_up_right:
+
+    cmp w1, #'{'
+    bne not_up_left
+        adr x1, up_left_wall_seq
+        mov x2, up_left_wall_seq_len
+        bl memcpy
+        add x0, x0, x2
+        b write_cell_end
+    not_up_left:
+
+    cmp w1, #']'
+    bne not_down_right
+        adr x1, down_right_wall_seq
+        mov x2, down_right_wall_seq_len
+        bl memcpy
+        add x0, x0, x2
+        b write_cell_end
+    not_down_right:
+
+    cmp w1, #'['
+    bne not_down_left
+        adr x1, down_left_wall_seq
+        mov x2, down_left_wall_seq_len
+        bl memcpy
+        add x0, x0, x2
+        b write_cell_end
+    not_down_left:
+
+    b write_cell_end
+
     set_magenta_seq:
         adr x1, magenta_cell_seq
         b write_colored_cell
@@ -128,6 +184,7 @@ write_cell:
         mov x2, blank_cell_len
         bl memcpy
         add x0, x0, x2
+    write_cell_end:
     EPILOGUE
     ret
 
@@ -223,6 +280,30 @@ yellow_cell_seq: // for O shape
 yellow_shadow_cell_seq: // for O shape shadow
     .ascii "\x1b[48;02;110;90;00m .\x1b[0m"
 colored_cell_len = . - yellow_shadow_cell_seq
+
+vertical_wall_seq:
+    .ascii "║"
+vertical_wall_seq_len = . - vertical_wall_seq
+
+horizontal_wall_seq:
+    .ascii "══"
+horizontal_wall_seq_len = . - horizontal_wall_seq
+
+down_left_wall_seq:
+    .ascii "╚"
+down_left_wall_seq_len = . - down_left_wall_seq
+
+down_right_wall_seq:
+    .ascii "╝"
+down_right_wall_seq_len = . - down_right_wall_seq
+
+up_left_wall_seq:
+    .ascii "╔"
+up_left_wall_seq_len = . - up_left_wall_seq
+
+up_right_wall_seq:
+    .ascii "╗"
+up_right_wall_seq_len = . - up_right_wall_seq
 
 blank_cell_seq:
     .ascii " ."

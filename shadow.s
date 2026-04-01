@@ -1,10 +1,10 @@
 .data
 .global shadow_position
 shadow_position:
-    .quad 0
-    .quad 0
-    .quad 0
-    .quad 0
+    .quad 13
+    .quad 13
+    .quad 13
+    .quad 13
 
 .text
 .include "macros.s"

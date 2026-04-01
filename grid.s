@@ -14,7 +14,7 @@ min_column = 1
 
 .global grid
 grid:
-    .space raws * columns + 1
+    .space raws * columns
 len = . - grid
 
 field:
@@ -112,8 +112,7 @@ fill_grid:
         cmp x2, x3
         blt full_fill
 
-
-    mov w0, #'Z'
+    mov w0, #'='
     mov x2, raws
     sub x2, x2, #1
     mov x4, columns
@@ -125,8 +124,16 @@ fill_grid:
         bne horizontal_down
 
     mov x2, #0
+    mov x4, columns
+    horizontal_up:
+        strb w0, [x1, x2]
+        add x2, x2, #1
+        cmp x2, x4
+        bne horizontal_up
+
+    mov w0, #'|'
+    mov x2, #0
     vertical:
-        mov w0, #'r'
         strb w0, [x1, x2]
 
         add x2, x2, x4
@@ -136,6 +143,24 @@ fill_grid:
         add x2, x2, #1
         cmp x2, x3
         blt vertical
+
+    corners:
+        mov w0, #'{'
+        strb w0, [x1]
+        mov w0, #'}'
+        mov x2, columns
+        sub x2, x2, #1
+        strb w0, [x1, x2]
+
+        mov w0, #'['
+        mov x3, len
+        sub x2, x3, x2
+        sub x2, x2, #1
+        strb w0, [x1, x2]
+
+        mov w0, #']'
+        sub x3, x3, #1
+        strb w0, [x1, x3]
     ret
 
 .global print_grid
@@ -143,11 +168,10 @@ print_grid:
     PROLOGUE
     adr x0, field
     adr x10, grid
-    mov x11, #1 // raws
+    mov x11, #0 // raws
     mov x21, raws
     mov x12, #0 // columns
     mov x22, columns // columns
-    adr x20, symbl
     // x23 - for tmp char
     // x24 - actual pos
     print_raws:
