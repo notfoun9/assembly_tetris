@@ -389,6 +389,7 @@ get_columns:
 clear_lines:
     PROLOGUE
     adr x0, grid
+    mov x10, #0
     adr x1, piece_position
     mov x2, #0
     clear_lines_loop:
@@ -421,17 +422,50 @@ clear_lines:
 
         add x2, x2, #8
         b clear_lines_loop
+
     clear_lines_loop_end:
+    cmp x10, #0
+    bne increase_score
     EPILOGUE
     ret
 
-clear_line:
-    // increase score
-    adr x4, score
-    ldr x5, [x4]
-    add x5, x5, #1
-    str x5, [x4]
+// x10 - lines cleared
+increase_score:
+    adr x1, score
+    ldr x2, [x1]
 
+    cmp x10, #1
+    bne not_1_line
+    add x2, x2, #40
+    b increase_score_end
+    not_1_line:
+
+    cmp x10, #2
+    bne not_2_line
+    add x2, x2, #100
+    b increase_score_end
+    not_2_line:
+
+    cmp x10, #3
+    bne not_3_line
+    add x2, x2, #400
+    b increase_score_end
+    not_3_line:
+
+    cmp x10, #4
+    bne not_4_line
+    add x2, x2, #1200
+    b increase_score_end
+    not_4_line:
+
+    increase_score_end:
+    str x2, [x1]
+    bl update_score_window
+    mov x10, #0
+    b clear_lines_loop_end
+
+clear_line:
+    add x10, x10, #1
     mov x4, columns
     udiv x3, x3, x4 // x3 - cur raw
     mov x5, #1
@@ -536,17 +570,52 @@ place_window_line:
     EPILOGUE
     ret
 
-.data
+// x2 - new score
+update_score_window:
+    mov x1, x2
+    mov x3, #1 // chars counter
+    mov x4, #10
+    chars_count_loop:
+        udiv x1, x1, x4
+        cmp x1, #0
+        beq chars_count_loop_end
+        add x3, x3, #1
+        b chars_count_loop
+    chars_count_loop_end:
+
+    adr x1, left_window       
+    add x1, x1, place_to_insert_score
+    add x1, x1, x3
+    score_str_loop:
+        udiv x3, x2, x4
+        mul x3, x3, x4
+        sub x3, x2, x3
+        add x3, x3, #'0'
+        strb w3, [x1], #-1
+        udiv x2, x2, x4
+        cmp x2, #0
+        bne score_str_loop
+    score_str_loop_end:
+    ret
 
 left_window_start = 0
-left_window_hight = 10
+left_window_hight = 16
 left_window_end = left_window_start + left_window_hight - 1
 
 idle_line_length = 23
+place_to_insert_score = 62 + 28 + 13
 
+
+.data
 idle_line:
     .ascii  "                       "
 left_window:
+    .ascii  "  ┏━━━━━━━━━━━━━━━━━┓  \0"
+    .ascii  "  ┃                 ┃  \0"
+    .ascii  "  ┃ Score:  0       ┃  \0" // 3rd line to insert score
+    .ascii  "  ┃                 ┃  \0"
+    .ascii  "  ┗━━━━━━━━━━━━━━━━━┛  \0"
+    .ascii  "                       \0"
     .ascii  "  ┏━━━━━━━━━━━━━━━━━┓  \0"
     .ascii  "  ┃ Left          A ┃  \0"
     .ascii  "  ┃ Right         D ┃  \0"
